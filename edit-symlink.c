@@ -18,7 +18,6 @@ int main(int argc, char ** argv) {
 	char linktarget[bufsize];
 	char * linkname = (char*)NULL;
 	int argi;
-	int ret;
 	for(argi = 1; argi < argc; argi++) {
 		char * arg = argv[argi];
 		if(arg[0] == '-') {
@@ -51,7 +50,7 @@ int main(int argc, char ** argv) {
 		printf("Usage: %s [OPTION]... LINK_NAME\n\
   -s, --silent   do not write addition messages to stdout\n\
   -h, --help     display this help and exit\n\
-Old and new link targets cannot be longer than %lli bytes.\n\
+Old and new link targets cannot be longer than %zu bytes.\n\
 ", argv[0], bufsize);
 		return 0;
 	} else {
