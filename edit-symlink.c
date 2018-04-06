@@ -62,7 +62,10 @@ Old and new link targets cannot be longer than %zu bytes.\n\
 		if(!(conf & SILENT)) printf("Current target:\n");
 		printf("%s\n", linktarget);
 		if(!(conf & SILENT)) printf("Enter new target:\n");
-		scanf("%s", linktarget);
+		/* scanf("%s", linktarget); */ /* This is unsafe and prone to buffer overflow */
+		char fmt_string[30];
+		snprintf(fmt_string, 30, "%%%zus", bufsize); /* Something like "%512s", which is safe */
+		scanf(fmt_string, linktarget);
 		if(unlink(linkname) == -1) return exiterr("Unable to delete old symlink");
 		if(symlink(linktarget, linkname) == -1) return exiterr("Unable to read symlink");
 		if(!(conf & SILENT)) printf("Link replaced!\n");
