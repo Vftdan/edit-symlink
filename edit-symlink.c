@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 #define SILENT 1
 #define HELP 2
@@ -18,7 +19,7 @@ int main(int argc, char ** argv) {
 	char linktarget[bufsize];
 	char * linkname = (char*)NULL;
 	int argi;
-	int ret;
+	memset(linktarget, 0, sizeof(linktarget[0]) * bufsize);
 	for(argi = 1; argi < argc; argi++) {
 		char * arg = argv[argi];
 		if(arg[0] == '-') {
@@ -51,19 +52,23 @@ int main(int argc, char ** argv) {
 		printf("Usage: %s [OPTION]... LINK_NAME\n\
   -s, --silent   do not write addition messages to stdout\n\
   -h, --help     display this help and exit\n\
-Old and new link targets cannot be longer than %lli bytes.\n\
-", argv[0], bufsize);
+Old link target cannot be longer than %zu bytes, and if it is, it will be truncated when displayed.\n\
+New link target cannot be longer than %zu bytes.\n\
+", argv[0], bufsize - 1, bufsize);
 		return 0;
 	} else {
 		if(linkname == (char*)NULL) {
 			fprintf(stderr, "Link name is not specified\n");
 			return -1;
 		}
-		if(readlink(linkname, linktarget, bufsize) == -1) return exiterr("Unable to read symlink");
+		if(readlink(linkname, linktarget, bufsize - 1) == -1) return exiterr("Unable to read symlink");
 		if(!(conf & SILENT)) printf("Current target:\n");
 		printf("%s\n", linktarget);
 		if(!(conf & SILENT)) printf("Enter new target:\n");
-		scanf("%s", linktarget);
+		/* scanf("%s", linktarget); */ /* This is unsafe and prone to buffer overflow */
+		char fmt_string[30];
+		snprintf(fmt_string, 30, "%%%zus", bufsize); /* Something like "%512s", which is safe */
+		scanf(fmt_string, linktarget);
 		if(unlink(linkname) == -1) return exiterr("Unable to delete old symlink");
 		if(symlink(linktarget, linkname) == -1) return exiterr("Unable to read symlink");
 		if(!(conf & SILENT)) printf("Link replaced!\n");
